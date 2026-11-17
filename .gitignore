@@ -1,0 +1,5 @@
+bin/
+obj/
+.podcli/
+*.user
+.vs/
