@@ -2,12 +2,25 @@ namespace PodCLI;
 
 internal static class Program
 {
-    internal static int Main(string[] args)
+    internal static async Task<int> Main(string[] args)
     {
-        // Stage 1 scaffold: the domain model and store exist; the CLI commands
-        // land in the next patch. Until then, show help and exit cleanly.
-        Console.WriteLine("podcli — a CLI podcast manager");
-        Console.WriteLine("Run `podcli help` once the commands land (next patch).");
-        return 0;
+        // Global option: --data-dir <dir> may appear before the command.
+        var dataDir = (string?)null;
+        var rest = new List<string>(args);
+        var dirIndex = rest.IndexOf("--data-dir");
+        if (dirIndex >= 0)
+        {
+            if (dirIndex + 1 >= rest.Count)
+            {
+                Console.WriteLine("Usage: podcli --data-dir <dir> <command> …");
+                return 2;
+            }
+            dataDir = rest[dirIndex + 1];
+            rest.RemoveRange(dirIndex, 2);
+        }
+
+        var store = dataDir is null ? Store.Default() : new Store(dataDir);
+        var cli = new Cli(store);
+        return await cli.RunAsync(rest.ToArray());
     }
 }
